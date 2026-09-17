@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Simulador da Reforma Tributária</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 25px;
+        }
+
+        .header-content {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: #cbd5e1;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .card h2 {
+            font-size: 19px;
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .field input,
+        .field select {
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            outline: 2px solid #9ca3af;
+        }
+
+        .button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: #111827;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background: #374151;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .result {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .result span {
+            display: block;
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .result strong {
+            font-size: 24px;
+        }
+
+        .difference {
+            margin-top: 20px;
+            padding: 18px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .disclaimer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+
+        .pdf-button {
+            margin-top: 18px;
+            background: #166534;
+        }
+
+        .pdf-button:hover {
+            background: #14532d;
+        }
+
+        .relatorio-pdf {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 794px;
+            background: #ffffff;
+            color: #111827;
+            padding: 42px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .relatorio-pdf h1 {
+            font-size: 25px;
+            margin-bottom: 7px;
+        }
+
+        .relatorio-pdf .subtitulo {
+            color: #4b5563;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .relatorio-pdf .linha {
+            height: 3px;
+            background: #111827;
+            margin: 0 0 24px 0;
+        }
+
+        .relatorio-pdf .secao {
+            margin-bottom: 24px;
+            page-break-inside: avoid;
+        }
+
+        .relatorio-pdf .secao h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            padding-bottom: 7px;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        .relatorio-pdf .dados {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px 22px;
+        }
+
+        .relatorio-pdf .dado {
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .relatorio-pdf .dado strong {
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .relatorio-pdf table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .relatorio-pdf th,
+        .relatorio-pdf td {
+            border: 1px solid #d1d5db;
+            padding: 9px 10px;
+            text-align: left;
+        }
+
+        .relatorio-pdf th {
+            background: #f3f4f6;
+            font-weight: bold;
+        }
+
+        .relatorio-pdf td:not(:first-child),
+        .relatorio-pdf th:not(:first-child) {
+            text-align: right;
+        }
+
+        .relatorio-pdf .impacto {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .relatorio-pdf .observacao {
+            background: #f8fafc;
+            border-left: 4px solid #111827;
+            padding: 12px 14px;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .relatorio-pdf .rodape {
+            margin-top: 28px;
+            padding-top: 12px;
+            border-top: 1px solid #d1d5db;
+            font-size: 10px;
+            color: #6b7280;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .relatorio-pdf .gerado-em {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 700px) {
+            .grid,
+            .results {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="header-content">
+        <h1>Simulador da Reforma Tributária</h1>
+        <p>Diagnóstico preliminar do impacto tributário da sua empresa</p>
+    </div>
+</header>
+
+<main class="container">
+
+    <div class="card">
+
+        <h2>1. Dados da empresa</h2>
+
+        <div class="grid">
+
+            <div class="field">
+                <label>Empresa / Razão Social</label>
+
+                <input
+                    type="text"
+                    id="empresa"
+                    placeholder="Nome da empresa"
+                >
+            </div>
+
+            <div class="field">
+                <label>CNPJ</label>
+
+                <input
+                    type="text"
+                    id="cnpj"
+                    placeholder="00.000.000/0000-00"
+                >
+            </div>
+
+            <div class="field">
+                <label>Regime tributário</label>
+
+                <select id="regime">
+                    <option value="simples">Simples Nacional</option>
+                    <option value="presumido">Lucro Presumido</option>
+                    <option value="real">Lucro Real</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Atividade principal</label>
+
+                <select id="atividade">
+                    <option value="comercio">Comércio</option>
+                    <option value="industria">Indústria</option>
+                    <option value="servicos">Serviços</option>
+                    <option value="mista">Mista</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Faturamento mensal</label>
+
+                <input
+                    type="number"
+                    id="faturamento"
+                    value="200000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <div class="field">
+                <label>Compras / insumos</label>
+
+                <input
+                    type="number"
+                    id="compras"
+                    value="80000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>2. Tributação atual</h2>
+
+        <div class="grid">
+
+            <div class="field">
+                <label>ICMS mensal</label>
+
+                <input
+                    type="number"
+                    id="icms"
+                    value="18000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <div class="field">
+                <label>ISS mensal</label>
+
+                <input
+                    type="number"
+                    id="iss"
+                    value="4000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <div class="field">
+                <label>PIS + COFINS mensal</label>
+
+                <input
+                    type="number"
+                    id="piscofins"
+                    value="7000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <div class="field">
+                <label>DAS mensal</label>
+
+                <input
+                    type="number"
+                    id="das"
+                    value="0"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>3. Cenário da Reforma</h2>
+
+        <div class="grid">
+
+            <div class="field">
+                <label>Ano da simulação</label>
+
+                <select id="ano">
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                    <option value="2031">2031</option>
+                    <option value="2032">2032</option>
+                    <option value="2033">2033</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Alíquota simulada CBS + IBS (%)</label>
+
+                <input
+                    type="number"
+                    id="aliquota"
+                    value="1"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                >
+            </div>
+
+        </div>
+
+        <button class="button" onclick="calcular()">
+            CALCULAR IMPACTO
+        </button>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Resultado da simulação</h2>
+
+        <div class="results">
+
+            <div class="result">
+                <span>Tributos atuais / mês</span>
+                <strong id="tributosAtuais">
+                    R$ 0,00
+                </strong>
+            </div>
+
+            <div class="result">
+                <span>CBS + IBS estimados / mês</span>
+                <strong id="tributosNovos">
+                    R$ 0,00
+                </strong>
+            </div>
+
+            <div class="result">
+                <span>Diferença estimada / mês</span>
+                <strong id="diferenca">
+                    R$ 0,00
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="difference">
+
+            <strong>Carga tributária</strong>
+
+            <p id="carga">
+                Informe os dados e clique em calcular.
+            </p>
+
+        </div>
+
+        <p class="disclaimer">
+            Esta ferramenta apresenta uma simulação preliminar e não substitui
+            a apuração tributária oficial. O resultado depende do regime,
+            atividade, operações, regras de creditamento, alíquotas aplicáveis
+            e regulamentação vigente.
+        </p>
+
+        <button class="button pdf-button" type="button" onclick="gerarDiagnosticoPDF()">
+            GERAR DIAGNÓSTICO EM PDF
+        </button>
+
+    </div>
+
+    <div id="relatorioPdf" class="relatorio-pdf">
+
+        <h1>Diagnóstico da Reforma Tributária</h1>
+        <p class="subtitulo">Análise preliminar do impacto tributário da empresa</p>
+        <div class="linha"></div>
+
+        <div class="secao">
+            <h2>1. Identificação da empresa</h2>
+            <div class="dados">
+                <div class="dado"><strong>Empresa:</strong> <span id="pdfEmpresa">Não informada</span></div>
+                <div class="dado"><strong>CNPJ:</strong> <span id="pdfCnpj">Não informado</span></div>
+                <div class="dado"><strong>Regime:</strong> <span id="pdfRegime">-</span></div>
+                <div class="dado"><strong>Atividade:</strong> <span id="pdfAtividade">-</span></div>
+                <div class="dado"><strong>Ano da simulação:</strong> <span id="pdfAno">-</span></div>
+                <div class="dado"><strong>Emissão:</strong> <span id="pdfData">-</span></div>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h2>2. Cenário atual</h2>
+            <div class="dados">
+                <div class="dado"><strong>Faturamento mensal:</strong> <span id="pdfFaturamento">R$ 0,00</span></div>
+                <div class="dado"><strong>Compras / insumos:</strong> <span id="pdfCompras">R$ 0,00</span></div>
+                <div class="dado"><strong>Tributos atuais / mês:</strong> <span id="pdfAtualMensal">R$ 0,00</span></div>
+                <div class="dado"><strong>Tributos atuais / ano:</strong> <span id="pdfAtualAnual">R$ 0,00</span></div>
+                <div class="dado"><strong>Carga tributária atual:</strong> <span id="pdfCargaAtual">0,00%</span></div>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h2>3. Cenário simulado</h2>
+            <div class="dados">
+                <div class="dado"><strong>Base simulada:</strong> <span id="pdfBase">R$ 0,00</span></div>
+                <div class="dado"><strong>Alíquota CBS + IBS:</strong> <span id="pdfAliquota">0,00%</span></div>
+                <div class="dado"><strong>Tributos estimados / mês:</strong> <span id="pdfNovoMensal">R$ 0,00</span></div>
+                <div class="dado"><strong>Tributos estimados / ano:</strong> <span id="pdfNovoAnual">R$ 0,00</span></div>
+                <div class="dado"><strong>Carga tributária simulada:</strong> <span id="pdfCargaNova">0,00%</span></div>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h2>4. Comparativo</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Indicador</th>
+                        <th>Atual</th>
+                        <th>Simulado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Tributos mensais</td>
+                        <td id="pdfTabelaAtualMensal">R$ 0,00</td>
+                        <td id="pdfTabelaNovoMensal">R$ 0,00</td>
+                    </tr>
+                    <tr>
+                        <td>Tributos anuais</td>
+                        <td id="pdfTabelaAtualAnual">R$ 0,00</td>
+                        <td id="pdfTabelaNovoAnual">R$ 0,00</td>
+                    </tr>
+                    <tr>
+                        <td>Carga tributária</td>
+                        <td id="pdfTabelaCargaAtual">0,00%</td>
+                        <td id="pdfTabelaCargaNova">0,00%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="secao">
+            <h2>5. Impacto estimado</h2>
+            <div class="impacto">
+                <div><strong>Diferença mensal:</strong> <span id="pdfDiferencaMensal">R$ 0,00</span></div>
+                <div><strong>Diferença anual:</strong> <span id="pdfDiferencaAnual">R$ 0,00</span></div>
+                <div><strong>Variação em relação ao cenário atual:</strong> <span id="pdfVariacao">0,00%</span></div>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h2>6. Pontos de atenção</h2>
+            <div class="observacao">
+                Este diagnóstico é uma simulação preliminar baseada exclusivamente nos dados informados no simulador.
+                O resultado não constitui apuração fiscal definitiva. A análise efetiva deverá considerar, entre outros fatores,
+                o regime tributário, a natureza das operações, os créditos tributários aplicáveis, a composição das receitas,
+                as alíquotas efetivamente vigentes e a regulamentação correspondente ao período analisado.
+            </div>
+        </div>
+
+        <div class="rodape">
+            Contabilidade Emilio — Diagnóstico preliminar da Reforma Tributária<br>
+            Documento gerado automaticamente pelo simulador.
+        </div>
+
+    </div>
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+<script>
+
+function dinheiro(valor) {
+
+    return valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+}
+
+
+function calcular() {
+
+    const faturamento =
+        Number(document.getElementById("faturamento").value) || 0;
+
+    const compras =
+        Number(document.getElementById("compras").value) || 0;
+
+    const icms =
+        Number(document.getElementById("icms").value) || 0;
+
+    const iss =
+        Number(document.getElementById("iss").value) || 0;
+
+    const piscofins =
+        Number(document.getElementById("piscofins").value) || 0;
+
+    const das =
+        Number(document.getElementById("das").value) || 0;
+
+    const regime =
+        document.getElementById("regime").value;
+
+    const aliquota =
+        (Number(document.getElementById("aliquota").value) || 0) / 100;
+
+
+    let tributosAtuais;
+
+
+    if (regime === "simples" && das > 0) {
+
+        tributosAtuais = das;
+
+    } else {
+
+        tributosAtuais =
+            icms +
+            iss +
+            piscofins;
+
+    }
+
+
+    const baseTributavel =
+        Math.max(faturamento - compras, 0);
+
+
+    const tributosNovos =
+        baseTributavel * aliquota;
+
+
+    const diferenca =
+        tributosNovos - tributosAtuais;
+
+
+    const cargaAtual =
+        faturamento > 0
+        ? (tributosAtuais / faturamento) * 100
+        : 0;
+
+
+    const cargaNova =
+        faturamento > 0
+        ? (tributosNovos / faturamento) * 100
+        : 0;
+
+
+    document.getElementById("tributosAtuais")
+        .textContent = dinheiro(tributosAtuais);
+
+
+    document.getElementById("tributosNovos")
+        .textContent = dinheiro(tributosNovos);
+
+
+    document.getElementById("diferenca")
+        .textContent = dinheiro(diferenca);
+
+
+    document.getElementById("carga")
+        .textContent =
+        "Carga atual: " +
+        cargaAtual.toFixed(2) +
+        "% | Carga simulada: " +
+        cargaNova.toFixed(2) +
+        "%";
+
+}
+
+
+function preencherDiagnosticoPDF() {
+
+    const faturamento = Number(document.getElementById("faturamento").value) || 0;
+    const compras = Number(document.getElementById("compras").value) || 0;
+    const icms = Number(document.getElementById("icms").value) || 0;
+    const iss = Number(document.getElementById("iss").value) || 0;
+    const piscofins = Number(document.getElementById("piscofins").value) || 0;
+    const das = Number(document.getElementById("das").value) || 0;
+    const aliquotaPercentual = Number(document.getElementById("aliquota").value) || 0;
+    const aliquota = aliquotaPercentual / 100;
+
+    const regimeElement = document.getElementById("regime");
+    const atividadeElement = document.getElementById("atividade");
+    const ano = document.getElementById("ano").value;
+
+    const tributosAtuais =
+        regimeElement.value === "simples" && das > 0
+        ? das
+        : icms + iss + piscofins;
+
+    const baseTributavel = Math.max(faturamento - compras, 0);
+    const tributosNovos = baseTributavel * aliquota;
+    const diferenca = tributosNovos - tributosAtuais;
+
+    const cargaAtual = faturamento > 0
+        ? (tributosAtuais / faturamento) * 100
+        : 0;
+
+    const cargaNova = faturamento > 0
+        ? (tributosNovos / faturamento) * 100
+        : 0;
+
+    const variacao = tributosAtuais !== 0
+        ? (diferenca / tributosAtuais) * 100
+        : 0;
+
+    const empresa = document.getElementById("empresa").value.trim() || "Não informada";
+    const cnpj = document.getElementById("cnpj").value.trim() || "Não informado";
+
+    const regime = regimeElement.options[regimeElement.selectedIndex].text;
+    const atividade = atividadeElement.options[atividadeElement.selectedIndex].text;
+
+    const agora = new Date();
+    const data = agora.toLocaleString("pt-BR", {
+        dateStyle: "short",
+        timeStyle: "short"
+    });
+
+    const campos = {
+        pdfEmpresa: empresa,
+        pdfCnpj: cnpj,
+        pdfRegime: regime,
+        pdfAtividade: atividade,
+        pdfAno: ano,
+        pdfData: data,
+        pdfFaturamento: dinheiro(faturamento),
+        pdfCompras: dinheiro(compras),
+        pdfAtualMensal: dinheiro(tributosAtuais),
+        pdfAtualAnual: dinheiro(tributosAtuais * 12),
+        pdfCargaAtual: cargaAtual.toFixed(2) + "%",
+        pdfBase: dinheiro(baseTributavel),
+        pdfAliquota: aliquotaPercentual.toFixed(2) + "%",
+        pdfNovoMensal: dinheiro(tributosNovos),
+        pdfNovoAnual: dinheiro(tributosNovos * 12),
+        pdfCargaNova: cargaNova.toFixed(2) + "%",
+        pdfTabelaAtualMensal: dinheiro(tributosAtuais),
+        pdfTabelaNovoMensal: dinheiro(tributosNovos),
+        pdfTabelaAtualAnual: dinheiro(tributosAtuais * 12),
+        pdfTabelaNovoAnual: dinheiro(tributosNovos * 12),
+        pdfTabelaCargaAtual: cargaAtual.toFixed(2) + "%",
+        pdfTabelaCargaNova: cargaNova.toFixed(2) + "%",
+        pdfDiferencaMensal: dinheiro(diferenca),
+        pdfDiferencaAnual: dinheiro(diferenca * 12),
+        pdfVariacao: variacao.toFixed(2) + "%"
+    };
+
+    Object.keys(campos).forEach(function(id) {
+        document.getElementById(id).textContent = campos[id];
+    });
+
+    return { empresa, ano };
+}
+
+
+async function gerarDiagnosticoPDF() {
+
+    calcular();
+
+    const dados = preencherDiagnosticoPDF();
+    const elemento = document.getElementById("relatorioPdf");
+
+    if (typeof html2pdf === "undefined") {
+        alert("Não foi possível carregar o gerador de PDF. Verifique sua conexão com a internet e tente novamente.");
+        return;
+    }
+
+    const nomeBase = dados.empresa
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .substring(0, 60) || "Empresa";
+
+    const opcoes = {
+        margin: [10, 10, 10, 10],
+        filename: "Diagnostico_Reforma_Tributaria_" + nomeBase + ".pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff"
+        },
+        jsPDF: {
+            unit: "mm",
+            format: "a4",
+            orientation: "portrait",
+            compressPDF: true
+        },
+        pagebreak: {
+            mode: ["css", "legacy"]
+        }
+    };
+
+    // O relatório fica fora da área principal da tela.
+    // Para evitar PDF em branco, colocamos o elemento temporariamente
+    // em uma posição renderizável pelo html2canvas.
+    const estiloOriginal = {
+        position: elemento.style.position,
+        left: elemento.style.left,
+        top: elemento.style.top,
+        zIndex: elemento.style.zIndex
+    };
+
+    try {
+        elemento.style.position = "fixed";
+        elemento.style.left = "0";
+        elemento.style.top = "0";
+        elemento.style.zIndex = "-1";
+
+        // Dá tempo para o navegador renderizar o conteúdo atualizado.
+        await new Promise(function(resolve) { setTimeout(resolve, 150); });
+
+        await html2pdf().set(opcoes).from(elemento).save();
+    } catch (erro) {
+        console.error(erro);
+        alert("Ocorreu um erro ao gerar o diagnóstico em PDF. Tente novamente.");
+    } finally {
+        elemento.style.position = estiloOriginal.position;
+        elemento.style.left = estiloOriginal.left;
+        elemento.style.top = estiloOriginal.top;
+        elemento.style.zIndex = estiloOriginal.zIndex;
+    }
+
+}
+
+
+calcular();
+
+</script>
+
+</body>
+</html>
